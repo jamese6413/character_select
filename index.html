@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>캐릭터 선택</title>
+  <style>
+    /* 간단한 스타일: 필요시 확장하세요 */
+    .active { display: block; }
+    #characterScreen, #skillScreen, #completeScreen { display: none; }
+    .character-card, .skill-card { border: 1px solid #ccc; padding: 8px; margin: 6px; cursor: pointer; display:inline-block;}
+    .selected { outline: 3px solid #2b8; }
+    .selected-item.empty { color: #888; }
+  </style>
+</head>
+<body>
+  <div id="characterScreen" class="active">
+    <h2>캐릭터 선택</h2>
+    <!-- 카드들은 데이터-인덱스로 동적 생성해도 되지만 간단히 예시로 비워둡니다 -->
+    <div id="charactersContainer"></div>
+  </div>
+
+  <div id="skillScreen">
+    <h2>스킬 선택 - <span id="selectedCharacterName"></span></h2>
+    <div id="skillsGrid"></div>
+    <div>
+      <h3>선택된 스킬</h3>
+      <div id="selectedSkillsList"></div>
+      <button id="backBtn">뒤로</button>
+      <button id="confirmBtn" disabled>확인</button>
+    </div>
+  </div>
+
+  <div id="completeScreen">
+    <h2>완료</h2>
+    <div id="finalCharacterName"></div>
+    <div id="finalSkills"></div>
+    <button id="restartBtn">처음으로</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
