@@ -1,58 +1,58 @@
 // 캐릭터 데이터
 const characters = [
     {
-        name: '전사',
+        name: '캐릭터 1',
         icon: '🗡️',
-        description: '강력한 공격력과 방어력',
+        description: '캐릭터 1 설명',
         skills: [
-            { name: '강타', description: '적에게 강력한 타격을 가한다' },
-            { name: '방패 방어', description: '방어력을 크게 증가시킨다' },
-            { name: '전투 울음', description: '모든 능력치를 상승시킨다' },
-            { name: '최후의 일격', description: '체력이 낮을수록 더 큰 데미지를 준다' }
+            { name: '1스킬', description: '1스킬 설명' },
+            { name: '2스킬', description: '2스킬 설명' },
+            { name: '3스킬', description: '3스킬 설명' },
+            { name: '4스킬', description: '4스킬 설명' }
         ]
     },
     {
-        name: '마법사',
+        name: '캐릭터 2',
         icon: '🧙',
-        description: '강력한 마법 능력',
+        description: '캐릭터 2 설명',
         skills: [
-            { name: '파이어볼', description: '넓은 범위에 불 마법을 시전한다' },
-            { name: '얼음창', description: '적을 얼려서 움직임을 봉쇄한다' },
-            { name: '마나 방패', description: '마나를 소모하여 피해를 흡수한다' },
-            { name: '시간 왜곡', description: '모든 적의 움직임을 느리게 만든다' }
+            { name: '1스킬', description: '1스킬 설명' },
+            { name: '2스킬', description: '2스킬 설명' },
+            { name: '3스킬', description: '3스킬 설명' },
+            { name: '4스킬', description: '4스킬 설명' }
         ]
     },
     {
-        name: '궁수',
+        name: '캐릭터 3',
         icon: '🏹',
-        description: '빠른 속도와 정확성',
+        description: '캐릭터 3 설명',
         skills: [
-            { name: '다중 화살', description: '여러 개의 화살을 동시에 발사한다' },
-            { name: '정확한 조준', description: '크리티컬 확률을 크게 증가시킨다' },
-            { name: '폭발 화살', description: '화살이 폭발하여 범위 피해를 준다' },
-            { name: '연속 사격', description: '매우 빠른 속도로 화살을 발사한다' }
+            { name: '1스킬', description: '1스킬 설명' },
+            { name: '2스킬', description: '2스킬 설명' },
+            { name: '3스킬', description: '3스킬 설명' },
+            { name: '4스킬', description: '4스킬 설명' }
         ]
     },
     {
-        name: '암살자',
+        name: '캐릭터 4',
         icon: '🥷',
-        description: '높은 크리티컬 확률',
+        description: '캐릭터 4 설명',
         skills: [
-            { name: '암습', description: '적 뒤에서 나타나 강력한 일격을 가한다' },
-            { name: '독 칠하기', description: '무기에 독을 칠해 지속 피해를 준다' },
-            { name: '회피', description: '다음 피해를 완벽히 회피한다' },
-            { name: '그림자 이동', description: '어둠 속으로 순간이동한다' }
+            { name: '1스킬', description: '1스킬 설명' },
+            { name: '2스킬', description: '2스킬 설명' },
+            { name: '3스킬', description: '3스킬 설명' },
+            { name: '4스킬', description: '4스킬 설명' }
         ]
     },
     {
-        name: '팔라딘',
+        name: '캐릭터 5',
         icon: '🛡️',
-        description: '방어와 치유 능력',
+        description: '캐릭터 5 설명',
         skills: [
-            { name: '신의 보호', description: '모든 아군을 보호하는 결계를 만든다' },
-            { name: '회복 기도', description: '모든 아군의 체력을 회복시킨다' },
-            { name: '심판', description: '악의 힘으로 적을 벌한다' },
-            { name: '신성한 방패', description: '방어력을 극도로 증가시킨다' }
+            { name: '1스킬', description: '1스킬 설명' },
+            { name: '2스킬', description: '2스킬 설명' },
+            { name: '3스킬', description: '3스킬 설명' },
+            { name: '4스킬', description: '4스킬 설명' }
         ]
     }
 ];
