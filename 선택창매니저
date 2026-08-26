@@ -1,0 +1,104 @@
+using UnityEngine;
+using System;
+
+/// <summary>
+/// 캐릭터 선택 화면 전체를 관리.
+///
+/// 흐름:
+///  1) 인트로/튜토리얼 스크립트가 끝나면서 이 매니저의 ShowCharacterSelect()를 호출 (신호 수신)
+///  2) 캐릭터 4마리가 세로로 나열된 선택창이 켜짐
+///  3) 캐릭터 하나 클릭 -> 그 옆에 스킬 선택창(4개 스킬) 표시
+///  4) 스킬 2개 선택 후 확인 버튼 클릭
+///  5) OnSelectionComplete 이벤트 발생(신호) -> 다음 씬/로직으로 전달, 화면 종료
+///
+/// [하이러키 예시 구조]
+/// CharacterSelectRoot (이 스크립트 부착, 처음엔 SetActive(false) 상태로 시작해도 됨)
+///  ├─ CharacterListPanel (Vertical Layout Group)
+///  │   ├─ CharacterSlot_0 .. CharacterSlot_3  (CharacterSlotUI)
+///  └─ SkillPanel (SkillPanelUI, 처음엔 비활성)
+///      ├─ SkillSlot_0 .. SkillSlot_3 (SkillSlotUI)
+///      └─ ConfirmButton
+/// </summary>
+public class CharacterSelectManager : MonoBehaviour
+{
+    [Header("데이터 (정확히 4개, 세로 나열 순서대로)")]
+    [SerializeField] private CharacterData[] characters = new CharacterData[4];
+
+    [Header("UI 연결")]
+    [SerializeField] private GameObject rootPanel;          // 화면 전체 루트 (인트로 끝나면 켜짐)
+    [SerializeField] private CharacterSlotUI[] characterSlots = new CharacterSlotUI[4];
+    [SerializeField] private SkillPanelUI skillPanel;
+    [SerializeField] private GameObject skillPanelObject;   // skillPanel.gameObject (표시/숨김용)
+
+    private CharacterSlotUI _currentSelectedSlot;
+
+    /// <summary>
+    /// 캐릭터 선택 완료 신호.
+    /// 파라미터: 선택된 캐릭터, 선택된 스킬 2개
+    /// GameFlowController 등에서 이 이벤트를 구독해서 다음 씬으로 넘어가면 됩니다.
+    /// </summary>
+    public static event Action<CharacterData, SkillData[]> OnSelectionComplete;
+
+    private void Awake()
+    {
+        for (int i = 0; i < characterSlots.Length; i++)
+        {
+            characterSlots[i].OnClicked += HandleCharacterClicked;
+        }
+
+        skillPanel.OnConfirmed += HandleSkillConfirmed;
+
+        if (skillPanelObject != null) skillPanelObject.SetActive(false);
+        if (rootPanel != null) rootPanel.SetActive(false);
+    }
+
+    /// <summary>
+    /// 인트로/튜토리얼이 끝났다는 신호를 받으면 이 메서드를 호출하세요.
+    /// 예) introController.OnIntroFinished += characterSelectManager.ShowCharacterSelect;
+    /// </summary>
+    public void ShowCharacterSelect()
+    {
+        if (rootPanel != null) rootPanel.SetActive(true);
+        if (skillPanelObject != null) skillPanelObject.SetActive(false);
+        _currentSelectedSlot = null;
+
+        for (int i = 0; i < characterSlots.Length; i++)
+        {
+            if (i < characters.Length && characters[i] != null)
+            {
+                characterSlots[i].gameObject.SetActive(true);
+                characterSlots[i].Setup(characters[i]);
+            }
+            else
+            {
+                characterSlots[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private void HandleCharacterClicked(CharacterSlotUI slot)
+    {
+        // 이전 선택 하이라이트 해제
+        if (_currentSelectedSlot != null)
+            _currentSelectedSlot.SetSelected(false);
+
+        _currentSelectedSlot = slot;
+        slot.SetSelected(true);
+
+        // 스킬 패널을 해당 캐릭터 데이터로 채우고, 캐릭터 옆에 위치시킨 뒤 표시
+        skillPanel.Setup(slot.Data);
+        skillPanel.PositionNextTo(slot.RectTransform);
+        if (skillPanelObject != null) skillPanelObject.SetActive(true);
+    }
+
+    private void HandleSkillConfirmed(SkillData[] chosenSkills)
+    {
+        var chosenCharacter = _currentSelectedSlot != null ? _currentSelectedSlot.Data : null;
+
+        // 최종 신호 발생
+        OnSelectionComplete?.Invoke(chosenCharacter, chosenSkills);
+
+        // 화면 종료
+        if (rootPanel != null) rootPanel.SetActive(false);
+    }
+}
