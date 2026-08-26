@@ -1,0 +1,47 @@
+using UnityEngine;
+using UnityEngine.UI;
+using System;
+
+/// <summary>
+/// 스킬 선택창의 스킬 버튼 하나 (4개 중 하나). 클릭하면 선택/해제 토글됨.
+/// SkillPanelUI의 skillSlots 배열에 4개 순서대로 연결하세요.
+/// </summary>
+public class SkillSlotUI : MonoBehaviour
+{
+    [Header("연결")]
+    [SerializeField] private Button button;
+    [SerializeField] private Image iconImage;
+    [SerializeField] private Text nameText;      // TMP 쓰면 TMP_Text로 교체
+    [SerializeField] private GameObject selectedHighlight;
+
+    public SkillData Data { get; private set; }
+    public bool IsSelected { get; private set; }
+
+    public event Action<SkillSlotUI> OnClicked;
+
+    private void Awake()
+    {
+        if (button == null) button = GetComponent<Button>();
+        button.onClick.AddListener(() => OnClicked?.Invoke(this));
+    }
+
+    public void Setup(SkillData data)
+    {
+        Data = data;
+        if (iconImage != null) iconImage.sprite = data.icon;
+        if (nameText != null) nameText.text = data.skillName;
+        SetSelected(false);
+    }
+
+    public void SetSelected(bool selected)
+    {
+        IsSelected = selected;
+        if (selectedHighlight != null)
+            selectedHighlight.SetActive(selected);
+    }
+
+    public void SetInteractable(bool interactable)
+    {
+        button.interactable = interactable;
+    }
+}
