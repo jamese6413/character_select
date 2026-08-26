@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>캐릭터 선택 - 프로토타입</title>
+<style>
+  :root{
+    --bg:#0e0d12;
+    --panel:#17151d;
+    --line:#2b2833;
+    --gold:#c9a15a;
+    --gold-dim:#8a7141;
+    --text:#e9e4d8;
+    --text-dim:#8f8a97;
+    --danger:#5a2b2b;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 20% -10%, #201c28 0%, transparent 60%),
+      radial-gradient(900px 500px at 100% 100%, #1a1720 0%, transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  /* ---- 인트로 (더미) ---- */
+  #intro{
+    position:fixed; inset:0;
+    background:#000;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:24px;
+    z-index:50;
+    transition:opacity .6s ease;
+  }
+  #intro h1{
+    font-weight:300;
+    letter-spacing:.5em;
+    font-size:14px;
+    color:var(--text-dim);
+    text-transform:uppercase;
+  }
+  #intro .bar{
+    width:280px; height:2px; background:var(--line); position:relative; overflow:hidden;
+  }
+  #intro .bar::after{
+    content:''; position:absolute; left:0; top:0; bottom:0; width:0%;
+    background:var(--gold); animation:load 1.8s ease forwards;
+  }
+  @keyframes load{ to{ width:100%; } }
+  #intro button{
+    margin-top:12px;
+    background:transparent; border:1px solid var(--gold-dim); color:var(--gold);
+    padding:10px 22px; letter-spacing:.2em; font-size:12px; cursor:pointer;
+    opacity:0; animation:fadein .4s ease 1.9s forwards;
+  }
+  #intro button:hover{ background:var(--gold); color:#191512; }
+  @keyframes fadein{ to{opacity:1;} }
+
+  /* ---- 선택 화면 루트 ---- */
+  #root{
+    position:relative;
+    width:960px; max-width:94vw;
+    height:640px; max-height:92vh;
+    display:none;
+  }
+  #root.active{ display:block; }
+
+  .eyebrow{
+    font-size:11px; letter-spacing:.35em; color:var(--gold-dim); text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  h2.title{
+    font-weight:300; font-size:28px; margin:0 0 28px 0; letter-spacing:.05em;
+  }
+
+  .stage{
+    position:relative;
+    display:flex;
+    gap:28px;
+    align-items:flex-start;
+  }
+
+  /* 캐릭터 리스트 (세로 4) */
+  #charList{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    width:300px;
+    flex-shrink:0;
+  }
+  .char-slot{
+    display:flex; align-items:center; gap:16px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:14px 16px;
+    cursor:pointer;
+    transition:border-color .2s, transform .2s, background .2s;
+  }
+  .char-slot:hover{ border-color:var(--gold-dim); transform:translateX(4px); }
+  .char-slot.selected{ border-color:var(--gold); background:#1d1a24; }
+  .char-slot .avatar{
+    width:52px; height:52px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px; font-weight:600;
+    background:linear-gradient(135deg, var(--line), #201c28);
+    border:1px solid var(--line);
+    flex-shrink:0;
+  }
+  .char-slot .info .name{ font-size:16px; letter-spacing:.03em; }
+  .char-slot .info .desc{ font-size:12px; color:var(--text-dim); margin-top:2px; }
+  .char-slot .mark{
+    margin-left:auto; width:8px; height:8px; border-radius:50%;
+    background:var(--line);
+  }
+  .char-slot.selected .mark{ background:var(--gold); box-shadow:0 0 8px var(--gold); }
+
+  /* 스킬 패널 (캐릭터 옆) */
+  #skillPanel{
+    width:100%;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:22px 24px;
+    opacity:0; transform:translateX(-12px);
+    pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+  }
+  #skillPanel.active{
+    opacity:1; transform:translateX(0);
+    pointer-events:auto;
+  }
+  #skillPanel .header{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-bottom:16px;
+  }
+  #skillPanel .header .sub{ font-size:12px; color:var(--text-dim); }
+  #skillPanel .counter{ font-size:12px; color:var(--gold); letter-spacing:.1em; }
+
+  #skillGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .skill-card{
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:14px;
+    cursor:pointer;
+    transition:border-color .2s, background .2s, opacity .2s;
+    position:relative;
+  }
+  .skill-card:hover{ border-color:var(--gold-dim); }
+  .skill-card.selected{ border-color:var(--gold); background:#221d15; }
+  .skill-card.disabled{ opacity:.35; cursor:not-allowed; }
+  .skill-card .sname{ font-size:14px; margin-bottom:4px; }
+  .skill-card .sdesc{ font-size:11.5px; color:var(--text-dim); line-height:1.4; }
+  .skill-card .check{
+    position:absolute; top:10px; right:10px;
+    width:16px; height:16px; border-radius:50%;
+    border:1px solid var(--line);
+    font-size:10px; display:flex; align-items:center; justify-content:center;
+    color:transparent;
+  }
+  .skill-card.selected .check{
+    border-color:var(--gold); background:var(--gold); color:#191512;
+  }
+
+  #confirmBtn{
+    margin-top:20px;
+    width:100%;
+    padding:13px;
+    background:transparent;
+    border:1px solid var(--gold-dim);
+    color:var(--gold-dim);
+    letter-spacing:.2em;
+    font-size:12px;
+    text-transform:uppercase;
+    cursor:not-allowed;
+    transition:all .2s;
+  }
+  #confirmBtn.ready{
+    border-color:var(--gold); color:#191512; background:var(--gold);
+    cursor:pointer;
+  }
+  #confirmBtn.ready:hover{ filter:brightness(1.1); }
+
+  /* 완료 신호 로그 (개발용 확인창) */
+  #signalLog{
+    position:fixed; left:20px; bottom:20px;
+    font-family:monospace; font-size:11px; color:var(--text-dim);
+    background:#0000; max-width:520px; line-height:1.6;
+    white-space:pre-wrap;
+  }
+  #signalLog b{ color:var(--gold); }
+
+  #result{
+    display:none;
+    text-align:center;
+  }
+  #result h2{ font-weight:300; letter-spacing:.1em; }
+  #result .picked{ color:var(--gold); font-size:20px; margin:14px 0 6px; }
+  #result .skillsPicked{ color:var(--text-dim); font-size:13px; }
+  #result button{
+    margin-top:26px;
+    background:transparent; border:1px solid var(--line); color:var(--text-dim);
+    padding:9px 18px; font-size:12px; letter-spacing:.15em; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+  <!-- 인트로 더미: 실제로는 여러분의 튜토리얼/인트로 씬이 여기 위치, 끝나면 신호를 보냄 -->
+  <div id="intro">
+    <h1>Intro / Tutorial (Dummy)</h1>
+    <div class="bar"></div>
+    <button id="skipIntro">건너뛰기 → 신호 전송</button>
+  </div>
+
+  <div id="root">
+    <div id="selectView">
+      <div class="eyebrow">Step 1 — 신호 수신됨: ShowCharacterSelect()</div>
+      <h2 class="title">캐릭터를 선택하세요</h2>
+      <div class="stage">
+        <div id="charList"></div>
+        <div id="skillPanel">
+          <div class="header">
+            <div>
+              <div class="eyebrow" style="margin-bottom:2px;">Step 2 — 스킬 2개 선택</div>
+              <div class="sub" id="skillPanelCharName"></div>
+            </div>
+            <div class="counter" id="skillCounter">0 / 2 선택</div>
+          </div>
+          <div id="skillGrid"></div>
+          <button id="confirmBtn" disabled>선택 확정 → OnSelectionComplete 신호 전송</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="result">
+      <div class="eyebrow">Step 3 — 완료 신호 전달됨</div>
+      <h2>선택이 완료되었습니다</h2>
+      <div class="picked" id="resultChar"></div>
+      <div class="skillsPicked" id="resultSkills"></div>
+      <button id="resetBtn">처음부터 다시 테스트</button>
+    </div>
+  </div>
+
+  <div id="signalLog"></div>
+
+<script>
+// ---- 더미 데이터: Unity의 CharacterData / SkillData 에 대응 ----
+const CHARACTERS = [
+  { name:"이그니스", desc:"화염을 다루는 근접 전사", avatar:"이",
+    skills:[
+      {name:"화염참",  desc:"전방을 베며 화상 효과 부여"},
+      {name:"작열 돌진", desc:"짧은 거리 돌진 후 폭발"},
+      {name:"불굴의 심장", desc:"체력이 낮을수록 공격력 증가"},
+      {name:"재의 방벽", desc:"일정 시간 피해 감소"},
+    ]},
+  { name:"프로스트", desc:"얼음 마법을 쓰는 원거리 딜러", avatar:"프",
+    skills:[
+      {name:"빙결 화살", desc:"적중 시 이동속도 감소"},
+      {name:"서리 폭발", desc:"범위 내 적 동결"},
+      {name:"얼음 갑주", desc:"받는 피해 일부를 흡수"},
+      {name:"절대영도", desc:"일정 시간 후 강력한 광역 피해"},
+    ]},
+  { name:"섀도우", desc:"은신에 특화된 암살자", avatar:"섀",
+    skills:[
+      {name:"그림자 강습", desc:"대상 뒤로 순간이동 후 공격"},
+      {name:"연막", desc:"짧은 시간 은신 상태 진입"},
+      {name:"맹독 단검", desc:"공격 시 중독 효과 중첩"},
+      {name:"처형", desc:"체력이 낮은 적에게 추가 피해"},
+    ]},
+  { name:"가디언", desc:"방어와 지원에 능한 수호자", avatar:"가",
+    skills:[
+      {name:"수호의 방패", desc:"아군을 대신해 피해를 흡수"},
+      {name:"진동 강타", desc:"주변 적을 기절시킴"},
+      {name:"회복의 오라", desc:"주변 아군 체력을 서서히 회복"},
+      {name:"불굴의 의지", desc:"치명적 피해를 1회 무효화"},
+    ]},
+];
+
+let selectedCharIndex = null;
+let selectedSkillIndexes = [];
+
+function log(msg){
+  const el = document.getElementById('signalLog');
+  el.innerHTML = msg + "<br>" + el.innerHTML;
+}
+
+// ---- 인트로 종료 -> 신호 전송 (Unity: introController.OnIntroFinished) ----
+document.getElementById('skipIntro').addEventListener('click', () => {
+  document.getElementById('intro').style.opacity = '0';
+  setTimeout(()=>{ document.getElementById('intro').style.display='none'; }, 600);
+  document.getElementById('root').classList.add('active');
+  log("<b>[신호] IntroFinished</b> → CharacterSelectManager.ShowCharacterSelect() 호출됨");
+  renderCharacterList();
+});
+
+function renderCharacterList(){
+  const list = document.getElementById('charList');
+  list.innerHTML = '';
+  CHARACTERS.forEach((c, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'char-slot';
+    slot.innerHTML = `
+      <div class="avatar">${c.avatar}</div>
+      <div class="info">
+        <div class="name">${c.name}</div>
+        <div class="desc">${c.desc}</div>
+      </div>
+      <div class="mark"></div>
+    `;
+    slot.addEventListener('click', () => selectCharacter(i, slot));
+    list.appendChild(slot);
+  });
+}
+
+function selectCharacter(i, slotEl){
+  selectedCharIndex = i;
+  selectedSkillIndexes = [];
+  document.querySelectorAll('.char-slot').forEach(el => el.classList.remove('selected'));
+  slotEl.classList.add('selected');
+
+  log(`<b>[클릭]</b> 캐릭터 선택: ${CHARACTERS[i].name}`);
+
+  document.getElementById('skillPanelCharName').textContent = `${CHARACTERS[i].name}의 스킬`;
+  renderSkillGrid(CHARACTERS[i].skills);
+  document.getElementById('skillPanel').classList.add('active');
+  updateConfirmState();
+}
+
+function renderSkillGrid(skills){
+  const grid = document.getElementById('skillGrid');
+  grid.innerHTML = '';
+  skills.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'skill-card';
+    card.innerHTML = `
+      <div class="check">✓</div>
+      <div class="sname">${s.name}</div>
+      <div class="sdesc">${s.desc}</div>
+    `;
+    card.addEventListener('click', () => toggleSkill(i, card));
+    grid.appendChild(card);
+  });
+}
+
+function toggleSkill(i, cardEl){
+  const already = selectedSkillIndexes.includes(i);
+  if(already){
+    selectedSkillIndexes = selectedSkillIndexes.filter(x => x !== i);
+    cardEl.classList.remove('selected');
+  } else {
+    if(selectedSkillIndexes.length >= 2) return; // 3번째 선택 무시 (Unity SkillPanelUI와 동일 로직)
+    selectedSkillIndexes.push(i);
+    cardEl.classList.add('selected');
+  }
+  updateConfirmState();
+}
+
+function updateConfirmState(){
+  const count = selectedSkillIndexes.length;
+  document.getElementById('skillCounter').textContent = `${count} / 2 선택`;
+
+  document.querySelectorAll('.skill-card').forEach((el, idx) => {
+    const isSelected = selectedSkillIndexes.includes(idx);
+    const shouldDisable = !isSelected && count >= 2;
+    el.classList.toggle('disabled', shouldDisable);
+  });
+
+  const btn = document.getElementById('confirmBtn');
+  const ready = count === 2;
+  btn.classList.toggle('ready', ready);
+  btn.disabled = !ready;
+}
+
+document.getElementById('confirmBtn').addEventListener('click', () => {
+  if(selectedSkillIndexes.length !== 2) return;
+  const c = CHARACTERS[selectedCharIndex];
+  const chosenSkills = selectedSkillIndexes.map(i => c.skills[i]);
+
+  log(`<b>[신호] OnSelectionComplete</b> → (${c.name}, [${chosenSkills.map(s=>s.name).join(', ')}])`);
+
+  document.getElementById('selectView').style.display = 'none';
+  document.getElementById('resultChar').textContent = c.name;
+  document.getElementById('resultSkills').textContent = chosenSkills.map(s=>s.name).join('  ·  ');
+  document.getElementById('result').style.display = 'block';
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  selectedCharIndex = null;
+  selectedSkillIndexes = [];
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('selectView').style.display = 'block';
+  document.getElementById('skillPanel').classList.remove('active');
+  renderCharacterList();
+  document.getElementById('signalLog').innerHTML = '';
+});
+</script>
+</body>
+</html>
