@@ -1,0 +1,42 @@
+using UnityEngine;
+using UnityEngine.UI;
+using System;
+
+/// <summary>
+/// 세로로 나열된 4개의 캐릭터 슬롯 중 하나.
+/// 하이러키에 4개를 만들어서(예: CharacterSelectPanel 하위에 Vertical Layout Group으로 배치)
+/// CharacterSelectManager의 characterSlots 배열에 순서대로 넣어주세요.
+/// </summary>
+public class CharacterSlotUI : MonoBehaviour
+{
+    [Header("연결")]
+    [SerializeField] private Button button;
+    [SerializeField] private Image iconImage;
+    [SerializeField] private Text nameText;      // TMP 쓰면 TMP_Text로 교체
+    [SerializeField] private GameObject selectedHighlight; // 선택됐을 때 테두리 등 표시용 (선택)
+
+    public CharacterData Data { get; private set; }
+    public RectTransform RectTransform => (RectTransform)transform;
+
+    public event Action<CharacterSlotUI> OnClicked;
+
+    private void Awake()
+    {
+        if (button == null) button = GetComponent<Button>();
+        button.onClick.AddListener(() => OnClicked?.Invoke(this));
+    }
+
+    public void Setup(CharacterData data)
+    {
+        Data = data;
+        if (iconImage != null) iconImage.sprite = data.icon;
+        if (nameText != null) nameText.text = data.characterName;
+        SetSelected(false);
+    }
+
+    public void SetSelected(bool selected)
+    {
+        if (selectedHighlight != null)
+            selectedHighlight.SetActive(selected);
+    }
+}
