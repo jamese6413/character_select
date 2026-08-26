@@ -1,0 +1,18 @@
+using UnityEngine;
+
+/// <summary>
+/// 캐릭터 1종의 데이터. 4개의 캐릭터마다 이 에셋을 하나씩 만들어서
+/// CharacterSelectManager의 characters 배열에 순서대로 넣어주면 됩니다.
+/// (Project 창 우클릭 > Create > CharacterSelect > CharacterData)
+/// </summary>
+[CreateAssetMenu(fileName = "NewCharacter", menuName = "CharacterSelect/CharacterData")]
+public class CharacterData : ScriptableObject
+{
+    [Header("기본 정보")]
+    public string characterName;
+    public Sprite icon;
+    [TextArea] public string description;
+
+    [Header("스킬 (정확히 4개)")]
+    public SkillData[] skills = new SkillData[4];
+}
