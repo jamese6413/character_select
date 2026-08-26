@@ -1,0 +1,13 @@
+using UnityEngine;
+
+/// <summary>
+/// 스킬 1개의 데이터. 캐릭터당 4개씩 만들어서 CharacterData.skills에 연결합니다.
+/// (Project 창 우클릭 > Create > CharacterSelect > SkillData)
+/// </summary>
+[CreateAssetMenu(fileName = "NewSkill", menuName = "CharacterSelect/SkillData")]
+public class SkillData : ScriptableObject
+{
+    public string skillName;
+    public Sprite icon;
+    [TextArea] public string description;
+}
